@@ -2,7 +2,7 @@
 #Desc: use telegram to receive and send messages
 #Author: lebin.lv
 import os
-from datetime import datetime
+from datetime import datetime,timezone
 import requests
 from request_config import speech_to_text
 from param_config import GlobalState as GS
@@ -32,7 +32,7 @@ def get_telegram_message():
     offset = None
 
     chat_id = ''
-    local_time = ''
+    utc_time = ''
     updates = get_updates(offset)
     received_messages = ''
     for update in updates['result']:
@@ -41,12 +41,12 @@ def get_telegram_message():
 
         # 获取chat_id
         chat_id = message['chat']['id']
-        # 转换为本地时间（系统时区）
-        if len(str(local_time)) == 0:
+        # 将时间戳转换为UTC时间
+        if len(str(utc_time)) == 0:
             date_time = message['date']
-            local_time = str(datetime.fromtimestamp(date_time)).replace(' ','_')
+            utc_time = datetime.fromtimestamp(date_time,tz=timezone.utc).strftime("%Y-%m-%d_%H:%M:%S")
 
-            GS.FOLDER_PATH = "./AudioFiles/" + "audio_files_" + str(local_time)
+            GS.FOLDER_PATH = "./AudioFiles/" + "audio_files_" + str(utc_time)
             # 判断文件夹是否存在，不存在则创建
             if not os.path.exists(GS.FOLDER_PATH):
                 os.makedirs(GS.FOLDER_PATH)
@@ -81,4 +81,7 @@ def get_telegram_message():
     if offset:
         get_updates(offset)
 
-    return received_messages, chat_id, local_time
+    return received_messages, chat_id, utc_time
+
+if __name__ == '__main__':
+    get_telegram_message()

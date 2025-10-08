@@ -11,7 +11,7 @@ Adoration/Joy, Amusement, Anger, Awe/Surprise, Calmness, Confusion, Contempt/Pri
 # 与用户的主要交互模块
 def InteractivatePrompt(receive_message,histories):
     interactivate_prompt = """# 角色与任务
-现在你是一个老人陪伴助手，名字是“assistant”，特别精通于跟老年人聊天，我会将别人发来的消息转发给老人，然后你负责跟老人聊天对话，收集老人对于发信人的回复和问题，回答老人对你提出的相关问题，最后在老人没有新的问题的时候选择在合适的时机退出聊天。
+    现在你是一个老人陪伴助手，名字是“assistant”，特别精通于跟老年人聊天，我会将别人发来的消息转发给老人，然后你负责跟老人聊天对话，收集老人对于发信人的回复和问题，回答老人对你提出的相关问题，最后在老人没有新的问题的时候选择在合适的时机退出聊天。
 
 # 任务场景描述 
     由于老人不会使用电子设备、也看不清电子设备的信息，所以没法跟自己的孩子通过网络进行消息的交互，现在你需要扮演老人陪聊机器人，我会负责将他的孩子发来\
@@ -44,10 +44,9 @@ def InteractivatePrompt(receive_message,histories):
 
 # 历史消息
     {}
-    
-# 任务开始
-    -本次任务已经向老人转发的消息是：{}""".format(histories,receive_message)
 
+# 任务开始
+    -本次任务已经向老人转发的消息是：{}""".format(histories, receive_message)
 
     return interactivate_prompt
 
@@ -55,19 +54,18 @@ def InteractivatePrompt(receive_message,histories):
 
 ## 整理他人发给老人的信息，并将信息重新以第一身份阐述出来
 def SummarizeMessageByConversationPrompt(received_message,conversations):
-
     rewrite_conversation = 'sender: ' + received_message
     for conversation in conversations[1:]:
-        rewrite_conversation += '\t' + conversation['role'] + ': ' + str(conversation['content']).replace('\n','')
+        rewrite_conversation += '\t' + conversation['role'] + ': ' + str(conversation['content']).replace('\n', '')
         rewrite_conversation += '\n'
 
-    PROMPT =  """# 角色
-现在你是一个对话总结助手，特别精通分析对话内容，并按照要求进行内容提取和总结。
+    PROMPT = """# 角色
+    现在你是一个对话总结助手，特别精通分析对话内容，并按照要求进行内容提取和总结。
 
 # 任务场景描述
 由于老人不会使用电子设备、也看不清电子设备的信息，所以没法跟自己的孩子通过网络进行消息的交互，所以为了帮助老人使用网络和自己的孩子进行交互，我们做了一个方案。\
 第一步：使用消息设备将他的孩子发来的telegram消息告诉老人；第二步：然后让大模型扮演陪聊机器人跟老人进行交互聊天，目的是收集老人对于telegram消息的回复和新的问题；\
-第三步：拿到老人与陪聊机器人的对话内容后，找到聊天内容中老人对于telegram的回复和想要发给发信人的信息、问题等，将内容总结然后再以老人的身份重述消息后发给telegram的发信人。
+第三步：拿到老人与陪聊机器人的对话内容后，找到聊天内容中老人对于telegram的回复和想要发给发信人的信息、问题等，将内容总结然后再以老人的身份重述消息后发给telegram的发信人（他的孩子）。
 
 # 任务说明
     1. 现在上述方案的第一步和第二步都已经完成，下面会给出老人和陪聊助手的对话内容，现在需要你完成第三步的任务；
@@ -76,27 +74,27 @@ def SummarizeMessageByConversationPrompt(received_message,conversations):
 
 # 特别注意
     1. 直接返回整理的结果，不要给出过多的理解和解释；
-    2. 给出的对话过程中assistant的第一条消息就表示转发的来自telegram他人发来的消息；
+    2. 给出的对话过程中assistant的第一条消息就表示转发的来自telegram他人发来的消息，除非消息内容是“您好，您的telegram当前还没有收到最新的消息。”，这是telegram没有收到新消息时机器人助手对老人的提醒；
     3. 给出的对话过程中的“user”就表示使用者也就是老人说的话，“assistant”就表示陪聊机器人助手说的话；
     4. 总结重述后的内容因为需要以user老人第一人称的方式直接发给telegram发信人，所以可能需要将对话中代表telegram发信人的“他”的称呼都需要转换为“你”的称呼；
     5. 特别谨慎分析对话中user说的话的各个代词（“他”、“你”）指的是谁，如果是指的telegram发信人sender，那在最后的话术总结中都需要用“你”来表示；
-    6. 如果对话过程中老人user没有任何想要询问发信人的问题和回复发信人的消息，则直接返回【no_question】这个整体字符;
+    6. 如果对话过程中老人user没有任何想要询问发信人的问题、回复或主动发给发信人的消息时，需要你直接返回【no_question】这个整体字符，让我可以捕获到，此时就可以不发送无用的消息给sender（他的孩子）;
     7. 如果总结了多个回复和问题，每个回复和问题请以换行符进行分隔。
 
 # 任务示例
     示例1:
     ## 给出的对话过程如下
         sender: 你这周末下午想要去公园晒太阳吗
-	    user: 可以啊 今天 最近太陽好像都不錯
-	    assistant: 我是您的助手，我会将您说最近太阳都不错可以去公园晒太阳的消息转发给对方。您还有其他问题吗？	user: 没有其他的 没有其他的 谢谢 
-	    assistant: 好的，那我就先不打扰您了，祝您生活愉快，再见。【END】
+        user: 可以啊 今天 最近太陽好像都不錯
+        assistant: 我是您的助手，我会将您说最近太阳都不错可以去公园晒太阳的消息转发给对方。您还有其他问题吗？	user: 没有其他的 没有其他的 谢谢 
+        assistant: 好的，那我就先不打扰您了，祝您生活愉快，再见。【END】
     ## 总结后需要发送给sender的新消息
         最近太阳好像都不错，我这周末可以去公园晒太阳 
-    
-# 给出的对话过程如下
+
+# 本次与老人的对话内容
     {}
 
-# 请根据上述对话给出需要发送给sender的新消息
-""".format(rewrite_conversation)
+# 请根据上述对话内容给出需要发送给sender的新消息
+    """.format(rewrite_conversation)
 
     return PROMPT
