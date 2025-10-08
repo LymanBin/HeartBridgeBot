@@ -10,7 +10,7 @@ from main import start
 GPIO.setmode(GPIO.BCM)
 
 # 假设传感器连接在 GPIO17（BCM 编号）
-SENSOR_PIN = 17
+SENSOR_PIN = 21
 
 # 设置为输入引脚，使用上拉电阻（如果传感器是“低电平触发”）
 GPIO.setup(SENSOR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
