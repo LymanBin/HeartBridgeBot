@@ -5,7 +5,7 @@ HeartBridge-老人陪护机器人
 ## 🧠 项目简介
 
 帮助老人接收家人发来的telegram消息，并通过语音告诉老人，与老人进行多轮交互，将老人的问题或者回复再转发给发信人，实现全语音沟通。
-合作伙伴：@RUTH @W
+合作伙伴：@RUTH @Wang
 
 例如：
 [查看对话示例](./Histories/conversation_histories.json)
