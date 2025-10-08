@@ -117,7 +117,7 @@ def generate_and_tts(return_message,role):
 
     print("Play Audio：",f"{GS.FOLDER_PATH}/output_" + timestamp + '_' + role + ".mp3")
     if system_name == "Linux":
-        os.system(f"mpg123 -q {GS.FOLDER_PATH}/output_" + timestamp + '_' + role + ".mp3")  # macOS 播放命令
+        os.system(f"mpg123 -q {GS.FOLDER_PATH}/output_" + timestamp + '_' + role + ".mp3")  # linux 播放命令
     else:
         os.system(f"afplay {GS.FOLDER_PATH}/output_" + timestamp + '_' + role + ".mp3")  # macOS 播放命令
     # os.system("mpg123 output.mp3")  # Linux 树莓派使用 mpg123 播放ni
